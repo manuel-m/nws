@@ -1,0 +1,16 @@
+{
+  "name": "nws",
+  "version": "1.0.0",
+  "description": "apt-get install libuv1-dev",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "chokidar": "^1.4.2",
+    "debounce": "^1.0.0",
+    "lodash": "^4.1.0"
+  }
+}
