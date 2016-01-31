@@ -11,6 +11,7 @@
   "devDependencies": {
     "chokidar": "^1.4.2",
     "debounce": "^1.0.0",
-    "lodash": "^4.1.0"
+    "lodash": "^4.1.0",
+    "walk": "^2.3.9"
   }
 }

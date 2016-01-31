@@ -14,6 +14,7 @@ nothing:
 .PHONY: clean
 clean:
 	@ rm -rvf $(BUILD_DIR)
+	@ rm -rvf $(OUT_DIR)
 
 .PHONY: toolchain_clean
 toolchain_clean:
@@ -31,8 +32,8 @@ build: release debug
 	@echo "build target"
 
 .PHONY: tests
-tests: debug
-	@echo "test target"
+tests: build
+	@node $(TOOLCHAIN)/testsUnit.js
 
 release:
 	@ cd $(BUILD_RELEASE) && make

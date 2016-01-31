@@ -13,9 +13,9 @@ set (etD "")
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
     set (etD "${etD}_d")
+    add_subdirectory(tests)
 endif (CMAKE_BUILD_TYPE MATCHES Debug)
 
 add_executable(nws${etD} main.cpp)
 
 
-add_subdirectory(tests)
