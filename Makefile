@@ -5,6 +5,7 @@ BUILD_DIR=$(current_dir)/build
 BUILD_DEBUG=$(BUILD_DIR)/debug
 BUILD_RELEASE=$(BUILD_DIR)/release
 TOOLCHAIN=toolchain
+OUT_DIR=$(current_dir)/out
 
 .PHONY: nothing
 nothing:
@@ -22,11 +23,16 @@ toolchain_clean:
 configure: clean
 	@ mkdir -vp $(BUILD_DEBUG) && cd $(BUILD_DEBUG) && cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja ../../src
 	@ mkdir -vp $(BUILD_RELEASE) && cd $(BUILD_RELEASE) && cmake -DCMAKE_BUILD_TYPE=Release G Ninja  ../../src
+	@ mkdir -vp $(OUT_DIR)
 	@ cd $(TOOLCHAIN) && npm i
 
 .PHONY: build
 build: release debug
 	@echo "build target"
+
+.PHONY: tests
+tests: debug
+	@echo "test target"
 
 release:
 	@ cd $(BUILD_RELEASE) && make

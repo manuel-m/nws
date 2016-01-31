@@ -27,7 +27,6 @@
     };
 
     fn_watch = function() {
-        //var watcher = chokidar.watch(process.argv[2], {
         var watcher = chokidar.watch('src', {
             ignored: /[\/\\]\./
         });
