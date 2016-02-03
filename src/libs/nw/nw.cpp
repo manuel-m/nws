@@ -1,4 +1,3 @@
-
 #include "nw/nw.h"
 
 /* ==========================================================================
@@ -34,7 +33,7 @@ static void on_alloc_buffer(uv_handle_t *h_, size_t suggested_sz_, uv_buf_t *buf
  * tcp callbacks
  * ========================================================================== */
 static void on_tcp_close(uv_handle_t *handle_) {
-    struct httpCli_s *cli = (struct httpCli_s *) handle_->data;
+    struct httpCli *cli = (struct httpCli *) handle_->data;
 
     free(cli->m_resbuf.base);
     free(cli);
@@ -52,8 +51,8 @@ static void on_tcp_after_write(uv_write_t *req_, int status_) {
 static void on_tcp_read(uv_stream_t *handle_, ssize_t nread_, const uv_buf_t *buf_) {
 
     size_t parsed;
-    struct httpCli_s *cli = (struct httpCli_s *) handle_->data;
-    struct httpSrv_s *srv = cli->m_srv;
+    struct httpCli *cli = (struct httpCli *) handle_->data;
+    struct httpSrv *srv = cli->m_srv;
 
     if (nread_ >= 0) {
         parsed = http_parser_execute(
@@ -73,7 +72,7 @@ static void on_tcp_read(uv_stream_t *handle_, ssize_t nread_, const uv_buf_t *bu
 /* ==========================================================================
  * client
  * ========================================================================== */
-static void client_init(struct httpSrv_s *srv_, struct httpCli_s *cli_) {
+static void client_init(struct httpSrv *srv_, struct httpCli *cli_) {
     cli_->m_request_num = srv_->m_request_num;
     cli_->m_srv = srv_;
     cli_->m_parser.data = cli_;
@@ -86,18 +85,18 @@ static void on_tcp_connect(uv_stream_t *handle_, int status_) {
     /* something wrong with status .... exit */
     if (0 > status_) log_rinternal();
 
-    struct httpSrv_s *server = (struct httpSrv_s *) handle_->data;
+    struct httpSrv *server = (struct httpSrv *) handle_->data;
 
     /* check ip */
     int r;
-    struct sockaddr sockCli;
+    struct sockaddr_storage sockCli; /* fix error with struct sockaddr */
     int namelen;
     struct sockaddr_in check_addr;
     char check_ip[17];
 
     ++(server->m_request_num);
 
-    struct httpCli_s *cli = (struct httpCli_s *) calloc(1, sizeof(struct httpCli_s));
+    struct httpCli *cli = (struct httpCli *) calloc(1, sizeof(struct httpCli));
 
     /* nothing todo ... exit */
     if (NULL == cli) log_rinternal();
@@ -112,7 +111,7 @@ static void on_tcp_connect(uv_stream_t *handle_, int status_) {
     }
 
     /* get client ip */
-    if (0 != uv_tcp_getpeername((uv_tcp_t * ) & cli->m_handle, &sockCli, &namelen)) {
+    if (0 != uv_tcp_getpeername((uv_tcp_t * ) & cli->m_handle, (struct sockaddr *) &sockCli, &namelen)) {
         log_ginternal();
     }
 
@@ -152,10 +151,10 @@ static void on_tcp_connect(uv_stream_t *handle_, int status_) {
    [!] body buffer will be freed on stat_response end */
 static int on_body_cb(http_parser *parser_, const char *p_, size_t sz_) {
     int res = 0;
-    struct httpCli_s *cli = (struct httpCli_s *) parser_->data;
+    struct httpCli *cli = (struct httpCli *) parser_->data;
 
     const size_t max_body_size = cli->m_srv->m_max_body_size;
-    struct message_s *m = &cli->pub.m_mess;
+    struct message *m = &cli->pub.m_mess;
 
     if ((m->body_size + sz_) > max_body_size) {
         log_gerr("body response to large %zu/%zu ", m->body_size, max_body_size);
@@ -184,15 +183,15 @@ static int on_body_cb(http_parser *parser_, const char *p_, size_t sz_) {
 }
 
 static int on_status_cb(http_parser *p_, const char *buf_, size_t sz_) {
-    struct httpCli_s *cli = (struct httpCli_s *) p_->data;                              \
-    struct message_s *m = &cli->pub.m_mess;
+    struct httpCli *cli = (struct httpCli *) p_->data;                              \
+    struct message *m = &cli->pub.m_mess;
     strlncat(m->response_status, sizeof(m->response_status), buf_, sz_);
     return 0;
 }
 
 static int on_header_field_cb(http_parser *p_, const char *buf_, size_t sz_) {
-    struct httpCli_s *cli = (struct httpCli_s *) p_->data;                              \
-    struct message_s *m = &cli->pub.m_mess;
+    struct httpCli *cli = (struct httpCli *) p_->data;                              \
+    struct message *m = &cli->pub.m_mess;
     if (m->last_header_element != BR_HEADER_FIELD) m->num_headers++;
     strlncat(m->headers[m->num_headers - 1][0], sizeof(m->headers[m->num_headers - 1][0]), buf_, sz_);
     m->last_header_element = BR_HEADER_FIELD;
@@ -200,8 +199,8 @@ static int on_header_field_cb(http_parser *p_, const char *buf_, size_t sz_) {
 }
 
 static int on_message_begin_cb(http_parser *p_) {
-    struct httpCli_s *cli = (struct httpCli_s *) p_->data;                              \
-    struct message_s *m = &cli->pub.m_mess;
+    struct httpCli *cli = (struct httpCli *) p_->data;                              \
+    struct message *m = &cli->pub.m_mess;
     m->body_fragment = 0;
     m->body_size = 0;
     m->message_begin_cb_called = 1;
@@ -209,16 +208,16 @@ static int on_message_begin_cb(http_parser *p_) {
 }
 
 static int on_url_cb(http_parser *p_, const char *buf_, size_t sz_) {
-    struct httpCli_s *cli = (struct httpCli_s *) p_->data;                              \
-    struct message_s *m = &cli->pub.m_mess;
+    struct httpCli *cli = (struct httpCli *) p_->data;                              \
+    struct message *m = &cli->pub.m_mess;
     strlncat(m->request_url, sizeof(m->request_url), buf_, sz_);
     m->request_url_n = sz_;
     return 0;
 }
 
 static int on_headers_complete_cb(http_parser *p_) {
-    struct httpCli_s *cli = (struct httpCli_s *) p_->data;
-    struct message_s *m = &cli->pub.m_mess;
+    struct httpCli *cli = (struct httpCli *) p_->data;
+    struct message *m = &cli->pub.m_mess;
     m->method = p_->method;
     m->status_code = p_->status_code;
     m->http_major = p_->http_major;
@@ -229,52 +228,22 @@ static int on_headers_complete_cb(http_parser *p_) {
 }
 
 static int on_header_value_cb(http_parser *p_, const char *buf_, size_t sz_) {
-    struct httpCli_s *cli = (struct httpCli_s *) p_->data;                              \
-    struct message_s *m = &cli->pub.m_mess;
+    struct httpCli *cli = (struct httpCli *) p_->data;                              \
+    struct message *m = &cli->pub.m_mess;
     strlncat(m->headers[m->num_headers - 1][1],
              sizeof(m->headers[m->num_headers - 1][1]), buf_, sz_);
     m->last_header_element = BR_HEADER_VALUE;
     return 0;
 }
 
-static int on_stats_response_cb(struct httpCli_s *c_) {
-    int res = 0;
-    const char *url;
-    if (NULL == c_) log_ginternal();
-    url = c_->pub.m_mess.request_url;
-
-    if (!strcmp(url, "/error")) {
-        NW_HTTP_RESPONSE_NOBODY_SET(c_, url, HTTP_STATUS_400, "helloword");
-    } else {
-        static const char FAKERESP[] =
-                "<!DOCTYPE html>"
-                        "<html lang=\"en\">"
-                        "<head>"
-                        "<meta charset=\"utf-8\"/>"
-                        "</head>"
-                        "<body>"
-                        "hello word"
-                        "</body>"
-                        "</html>";
-
-        NW_HTTP_RESPONSE_SET(c_, (unsigned char *) FAKERESP, STR_FIXED_N(FAKERESP), \
-            "text/html", url, HTTP_STATUS_200, "helloword");
-    }
-
-    end:
-    return res;
-
-    err:
-    res = -1;
-    goto end;
-}
 
 static int on_message_complete_cb(http_parser *p_) {
-    struct httpCli_s *cli = (struct httpCli_s *) p_->data;
-    struct message_s *m = &cli->pub.m_mess;
+    struct httpCli *cli = (struct httpCli *) p_->data;
+    struct httpSrv *srv = cli->m_srv;
+    struct message *m = &cli->pub.m_mess;
     int res = 0;
 
-    if (0 > on_stats_response_cb(cli)) {
+    if (0 > srv->m_on_stats_response_cb(cli)) {
         NW_HTTP_RESPONSE_NOBODY_SET(cli, m->request_url, "400 Bad Request", NWS_STR_ID);
     }
 
@@ -297,12 +266,14 @@ static int on_message_complete_cb(http_parser *p_) {
     goto end;
 }
 
-void Nw::init() {
+void Nw::init(struct httpSrvConf *conf_) {
 
-    memset(&this->m_srv, 0, sizeof(struct httpSrv_s));
+    memset(&this->m_srv, 0, sizeof(struct httpSrv));
 
-    this->m_srv.m_max_connections = 0;
-    this->m_srv.m_max_body_size = 0;
+    this->m_srv.m_max_connections = conf_->max_connections;
+    this->m_srv.m_max_body_size = conf_->max_body_size;
+    this->m_srv.m_on_stats_response_cb = conf_->on_stats_response_cb;
+
     this->m_srv.m_request_num = 0;
     this->m_srv.m_parser_settings.on_message_begin = on_message_begin_cb;
     this->m_srv.m_parser_settings.on_url = on_url_cb;
@@ -319,7 +290,7 @@ int Nw::listen() {
 
     log_info("+ http listen %d", this->m_srv.m_port);
     uv_loop_t *loop = uv_default_loop();
-    struct httpSrv_s *srv = &this->m_srv;
+    struct httpSrv *srv = &this->m_srv;
 
     uv_tcp_init(loop, &srv->m_handler);
     srv->m_handler.data = srv;

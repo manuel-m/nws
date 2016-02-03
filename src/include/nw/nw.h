@@ -11,22 +11,29 @@
 
 #define NW_LISTEN_DEFAULT_PORT 8080
 
-enum ELastHeaderElement {
+enum LastHeaderElement {
     NONE = 0, BR_HEADER_FIELD, BR_HEADER_VALUE
 };
 
-struct httpSrv_s {
+struct httpSrvConf {
+    size_t max_body_size;
+    size_t max_connections;
+    int port;
+    int (*on_stats_response_cb)(struct httpCli *c_);
+};
+
+struct httpSrv {
     struct sockaddr_in m_addr;
     uv_tcp_t m_handler;
     size_t m_max_connections;
-    size_t m_max_sql_row_results;
     size_t m_max_body_size;
     http_parser_settings m_parser_settings;
     int m_request_num;
     int m_port;
+    int (*m_on_stats_response_cb)(struct httpCli *c_);
 };
 
-struct message_s {
+struct message {
     const char *name; // for debugging purposes
     enum http_parser_type type;
     unsigned int method;
@@ -42,7 +49,7 @@ struct message_s {
     uint16_t port;
     int num_headers;
 
-    enum ELastHeaderElement last_header_element;
+    enum LastHeaderElement last_header_element;
 
     char headers[13][2][2048];
     int should_keep_alive;
@@ -59,16 +66,16 @@ struct message_s {
 
 };
 
-struct httpCli_s {
+struct httpCli {
     uv_tcp_t m_handle;
     http_parser m_parser;
     uv_write_t m_write_req;
     int m_request_num;
-    struct httpSrv_s *m_srv;
+    struct httpSrv *m_srv;
     uv_buf_t m_resbuf;
 
     struct {
-        struct message_s m_mess;
+        struct message m_mess;
     } pub;
 
 };
@@ -77,12 +84,12 @@ class Nw {
 
 protected:
 
-    struct httpSrv_s m_srv;
+    struct httpSrv m_srv;
 
 public:
 
 //    virtual void args(int argc, char **argv) = 0;
-    void init();
+    void init(struct httpSrvConf* conf_);
     int listen();
 
 
