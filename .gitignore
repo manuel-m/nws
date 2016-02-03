@@ -26,3 +26,7 @@
 *.exe
 *.out
 *.app
+build
+.idea
+node_modules
+out
