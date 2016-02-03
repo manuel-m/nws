@@ -12,7 +12,7 @@
     debounce_delay = 250;
 
     fn_cmd = function(evt_, path_) {
-        var spawned_cmd = spawn('make', ['tests']);
+        var spawned_cmd = spawn('make', ['build']);
         console.log(['[INFO] ', evt_, ' => ', path_].join(''));
 
         spawned_cmd.stdout.on('data', function(data_) {
