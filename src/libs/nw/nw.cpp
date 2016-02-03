@@ -296,10 +296,10 @@ int Nw::listen() {
     srv->m_handler.data = srv;
     if (0 != uv_ip4_addr("0.0.0.0", srv->m_port, &srv->m_addr))die_internal();
     if (0 != uv_tcp_bind(&srv->m_handler, (const struct sockaddr *) &srv->m_addr, 0))
-        die("bind port %d already in use", srv->m_port);
+        log_return_1("bind port %d already in use", srv->m_port);
     if (0 != uv_listen((uv_stream_t * ) & srv->m_handler,
                        srv->m_max_connections, on_tcp_connect)) {
-        die("listen port %d already in use", srv->m_port);
+        log_return_1("listen port %d already in use", srv->m_port);
     }
 
     //    /* ref time update */

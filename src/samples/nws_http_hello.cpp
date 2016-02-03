@@ -32,14 +32,7 @@ static int on_stats_response_cb(struct httpCli *c_) {
     goto end;
 }
 
-int main(){
-
-//    struct httpSrvConf {
-//        size_t max_body_size;
-//        size_t max_connections;
-//        int port;
-//        int (*on_stats_response_cb)(struct httpCli *c_);
-//    } ;
+int main() {
 
     struct httpSrvConf conf = {
             .max_body_size = 64000,
@@ -49,9 +42,9 @@ int main(){
     };
 
     Nw nw;
-
     nw.init(&conf);
-    nw.listen();
+    if( nw.listen() != 0) log_return_1("server shutdown");
+
 
     return 0;
 

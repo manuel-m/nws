@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "nw/nws.h"
+#include "nw/nw.h"
 
 using namespace std;
 

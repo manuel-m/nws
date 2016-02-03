@@ -34,10 +34,10 @@ extern "C" {
 #define log_internal(M, ...)  { log_err("internal", ##__VA_ARGS__); }
 #define log_ginternal(M, ...)  { log_gerr("internal", ##__VA_ARGS__); }
 #define log_rinternal(M, ...)  { log_err("internal", ##__VA_ARGS__); return;}
-#define log_rerr(M, ...)  { log_err(M, ##__VA_ARGS__); return -1; }
+#define log_rerr(M, ...)  { log_err(M, ##__VA_ARGS__); return 1; }
 #define log_return(M, ...)  { log_err(M, ##__VA_ARGS__); return; }
 #define log_return_NULL(M, ...)  { log_err(M, ##__VA_ARGS__); return NULL; }
-#define log_return_err(M, ...)  { log_err(M, ##__VA_ARGS__); return -1; }
+#define log_return_1(M, ...)  { log_err(M, ##__VA_ARGS__); return 1; }
 #define die(M, ...)  { log_err(M, ##__VA_ARGS__); exit(1); }
 #define die_internal(M, ...)  { die("internal", ##__VA_ARGS__); }
 
