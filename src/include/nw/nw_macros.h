@@ -33,7 +33,7 @@ do{                                                                            \
     NW_HTTP_RESPONSE_FMT(status_, serverid_), r_type_);                        \
     c_->m_resbuf.len = r_header_n + r_n_;                                      \
     c_->m_resbuf.base = (char*) malloc(c_->m_resbuf.len);                      \
-    if(NULL == c_->m_resbuf.base) log_ginternal();                             \
+    if(NULL == c_->m_resbuf.base) log_rerr("internal");                        \
     memcpy(c_->m_resbuf.base, r_header, r_header_n);                           \
     memcpy(c_->m_resbuf.base + r_header_n, r_, r_n_);                          \
     log_info(" + REP %s status:%s length:%zu", url_, status_,c_->m_resbuf.len);\

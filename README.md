@@ -1,13 +1,27 @@
-# CPP with node.js toolchain
+# Needle web server
 
-Seed project to bootstrap CPP project powered with node.js toolchain
-
-### Features
-
-* fast rebuild on code change (debug / release binaries)
-* tests integration
+A simple CPP web server on top of [libuv](https://github.com/libuv/libuv)
 
 ### Usage
+
+```
+#include "nw/nw.h"
+
+static const char _data[] = "<html><head></head><body>needle web server</body></html>";
+
+static int on_stats_response_cb(struct httpCli *c_) {
+    NW_HTTP_RESPONSE_SET(c_, (unsigned char *) _data, STR_FIXED_N(_data), "text/html",
+                         c_->pub.m_mess.request_url, HTTP_STATUS_200, "nws_start");
+}
+
+int main() {
+
+    Nw nw;
+    return nw.init(&on_stats_response_cb).listen();
+
+}
+```
+or check [samples](https://github.com/manuel-m/nws/tree/master/src/samples)
 
 * configuration
 ```

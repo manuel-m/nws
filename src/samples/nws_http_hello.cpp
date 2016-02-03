@@ -37,10 +37,8 @@ int main() {
     Nw nw;
     NwConf conf;
 
-    if( conf.load("src/tests/data/server.json") != 0) log_return_1("invalid configuration");
-    nw.init(conf.get_c(), &on_stats_response_cb);
-    if( nw.listen() != 0) log_return_1("server shutdown");
-
+    if (conf.load("src/tests/data/server.json") != 0) log_return_1("invalid configuration");
+    if (nw.init(&on_stats_response_cb, conf.get_c()).listen() != 0) log_return_1("server shutdown");
 
     return 0;
 

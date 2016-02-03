@@ -87,7 +87,7 @@ protected:
 
 public:
 
-    void init(struct httpSrvConf *conf_, int (*on_stats_response_cb_)(struct httpCli *c_));
+    Nw & init(int (*on_stats_response_cb_)(struct httpCli *c_), struct httpSrvConf *conf_ = NULL);
 
     int listen();
 
