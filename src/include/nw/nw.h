@@ -8,18 +8,17 @@
 #include "nw_defs.h"
 #include "nw_macros.h"
 #include "nw_http_defs.h"
+#include "nw_default_values.h"
 
-#define NW_LISTEN_DEFAULT_PORT 8080
-
-enum LastHeaderElement {
-    NONE = 0, BR_HEADER_FIELD, BR_HEADER_VALUE
-};
 
 struct httpSrvConf {
     size_t max_body_size;
     size_t max_connections;
     int port;
-    int (*on_stats_response_cb)(struct httpCli *c_);
+};
+
+enum LastHeaderElement {
+    NONE = 0, BR_HEADER_FIELD, BR_HEADER_VALUE
 };
 
 struct httpSrv {
@@ -30,6 +29,7 @@ struct httpSrv {
     http_parser_settings m_parser_settings;
     int m_request_num;
     int m_port;
+
     int (*m_on_stats_response_cb)(struct httpCli *c_);
 };
 
@@ -77,7 +77,6 @@ struct httpCli {
     struct {
         struct message m_mess;
     } pub;
-
 };
 
 class Nw {
@@ -88,11 +87,42 @@ protected:
 
 public:
 
-//    virtual void args(int argc, char **argv) = 0;
-    void init(struct httpSrvConf* conf_);
+    void init(struct httpSrvConf *conf_, int (*on_stats_response_cb_)(struct httpCli *c_));
+
     int listen();
 
+};
+
+
+class NwConf {
+
+protected:
+
+    struct httpSrvConf m_conf;
+
+public:
+
+    NwConf() { this->init(); }
+
+    void init();
+
+    int load(const char *);
+
+    struct httpSrvConf *get_c() { return &this->m_conf; }
 
 };
+
+
+//class NwRouter {
+//
+//    int (*on_stats_response_cb)(struct httpCli *c_);
+//
+//public:
+//    NwRouter() { this->init(); }
+//
+//    void init() { };
+//
+//
+//};
 
 #endif //NWS_NW_H

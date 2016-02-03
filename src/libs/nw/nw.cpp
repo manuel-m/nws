@@ -266,13 +266,15 @@ static int on_message_complete_cb(http_parser *p_) {
     goto end;
 }
 
-void Nw::init(struct httpSrvConf *conf_) {
+void Nw::init(struct httpSrvConf *conf_, int (*on_stats_response_cb_)(struct httpCli *c_)) {
 
     memset(&this->m_srv, 0, sizeof(struct httpSrv));
 
     this->m_srv.m_max_connections = conf_->max_connections;
     this->m_srv.m_max_body_size = conf_->max_body_size;
-    this->m_srv.m_on_stats_response_cb = conf_->on_stats_response_cb;
+    this->m_srv.m_port = conf_->port;
+
+    this->m_srv.m_on_stats_response_cb = on_stats_response_cb_;
 
     this->m_srv.m_request_num = 0;
     this->m_srv.m_parser_settings.on_message_begin = on_message_begin_cb;
@@ -283,7 +285,7 @@ void Nw::init(struct httpSrvConf *conf_) {
     this->m_srv.m_parser_settings.on_headers_complete = on_headers_complete_cb;
     this->m_srv.m_parser_settings.on_body = on_body_cb;
     this->m_srv.m_parser_settings.on_message_complete = on_message_complete_cb;
-    this->m_srv.m_port = NW_LISTEN_DEFAULT_PORT;
+
 }
 
 int Nw::listen() {

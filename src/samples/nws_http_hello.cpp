@@ -16,7 +16,7 @@ static int on_stats_response_cb(struct httpCli *c_) {
                         "<meta charset=\"utf-8\"/>"
                         "</head>"
                         "<body>"
-                        "hello word"
+                        "needle web server"
                         "</body>"
                         "</html>";
 
@@ -34,15 +34,11 @@ static int on_stats_response_cb(struct httpCli *c_) {
 
 int main() {
 
-    struct httpSrvConf conf = {
-            .max_body_size = 64000,
-            .max_connections = 8,
-            .port = 8080,
-            .on_stats_response_cb = &on_stats_response_cb
-    };
-
     Nw nw;
-    nw.init(&conf);
+    NwConf conf;
+
+    if( conf.load("src/tests/data/server.json") != 0) log_return_1("invalid configuration");
+    nw.init(conf.get_c(), &on_stats_response_cb);
     if( nw.listen() != 0) log_return_1("server shutdown");
 
 

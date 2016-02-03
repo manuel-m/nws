@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     assert( parsingSuccessful && "json parse data file");
 
     assert(root["host"].asString() == string("localhost"));
-    assert(root["port"].asString() == string("9990"));
+    assert(root["port"].asInt() == 9990 );
 
 
     return 0;
